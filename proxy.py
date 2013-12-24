@@ -10,8 +10,9 @@ import os,sys,thread,socket
 
 #********* CONSTANT VARIABLES *********
 BACKLOG = 50            # how many pending connections queue will hold
-MAX_DATA_RECV = 4096    # max number of bytes we receive at once
-DEBUG = False           # set to True to see the debug msgs
+MAX_DATA_RECV = 999999  # max number of bytes we receive at once
+DEBUG = True            # set to True to see the debug msgs
+BLOCKED = []      # just an example. Remove with [""] for no blocking at all.
 
 #**************************************
 #********* MAIN PROGRAM ***************
@@ -27,6 +28,8 @@ def main():
     host = ''               # blank for localhost
     port = int(sys.argv[1]) # port from argument
     
+    print "Proxy Server Running on ",host,":",sys.argv[1]
+
     try:
         # create a socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,11 +72,14 @@ def proxy_thread(conn, client_addr):
     # get url
     url = first_line.split(' ')[1]
 
-    if (DEBUG):
-        print first_line
-        print
-        print "URL:",url
-        print
+    for i in range(0,len(BLOCKED)):
+        if BLOCKED[i] in url:
+            print "\033[91mBlocked:   ",first_line,"\033[0m"
+            sys.exit(1)
+
+    print "\033[92mRequest:   ",first_line,"\033[0m"
+    # print "URL:",url
+    # print
     
     # find the webserver and port
     http_pos = url.find("://")          # find pos of ://
@@ -98,14 +104,12 @@ def proxy_thread(conn, client_addr):
         port = int((temp[(port_pos+1):])[:webserver_pos-port_pos-1])
         webserver = temp[:port_pos]
 
-    print "Connect to:", webserver, port
-
     try:
         # create a socket to connect to the web server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
         s.connect((webserver, port))
         s.send(request)         # send request to webserver
-
+        
         while 1:
             # receive data from web server
             data = s.recv(MAX_DATA_RECV)
@@ -122,7 +126,7 @@ def proxy_thread(conn, client_addr):
             s.close()
         if conn:
             conn.close()
-        print "Runtime Error:", message
+        print "\033[93mPeer Reset:",first_line,"\033[0m"
         sys.exit(1)
 #********** END PROXY_THREAD ***********
     
