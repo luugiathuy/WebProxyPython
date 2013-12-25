@@ -57,6 +57,15 @@ def main():
     s.close()
 #************** END MAIN PROGRAM ***************
 
+def printout(type,request,address):
+    if "Block" in type:
+        colornum = 91
+    elif "Request" in type:
+        colornum = 92
+    elif "Reset" in type:
+        colornum = 93
+
+    print "\033[",colornum,"m",address[0],"\t",type,"\t",request,"\033[0m"
 
 #*******************************************
 #********* PROXY_THREAD FUNC ***************
@@ -75,10 +84,11 @@ def proxy_thread(conn, client_addr):
 
     for i in range(0,len(BLOCKED)):
         if BLOCKED[i] in url:
-            print "\033[91mBlocked:   ",first_line,"\033[0m"
+            printout("Blacklist-Block",first_line,client_addr)
             sys.exit(1)
 
-    print "\033[92mRequest:   ",first_line,"\033[0m"
+
+    printout("Request",first_line,client_addr)
     # print "URL:",url
     # print
     
@@ -127,7 +137,7 @@ def proxy_thread(conn, client_addr):
             s.close()
         if conn:
             conn.close()
-        print "\033[93mPeer Reset:",first_line,"\033[0m"
+        printout("Peer Reset",first_line,client_addr)
         sys.exit(1)
 #********** END PROXY_THREAD ***********
     
