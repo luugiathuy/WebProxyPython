@@ -12,7 +12,7 @@ import os,sys,thread,socket
 BACKLOG = 50            # how many pending connections queue will hold
 MAX_DATA_RECV = 999999  # max number of bytes we receive at once
 DEBUG = True            # set to True to see the debug msgs
-BLOCKED = []      # just an example. Remove with [""] for no blocking at all.
+BLOCKED = []            # just an example. Remove with [""] for no blocking at all.
 
 #**************************************
 #********* MAIN PROGRAM ***************
@@ -21,14 +21,15 @@ def main():
 
     # check the length of command running
     if (len(sys.argv)<2):
-        print "usage: proxy <port>"  
-        return sys.stdout    
+        print "No port given, using :8080 (http-alt)" 
+        port = 8080
+    else:
+        port = int(sys.argv[1]) # port from argument
 
     # host and port info.
     host = ''               # blank for localhost
-    port = int(sys.argv[1]) # port from argument
     
-    print "Proxy Server Running on ",host,":",sys.argv[1]
+    print "Proxy Server Running on ",host,":",port
 
     try:
         # create a socket
