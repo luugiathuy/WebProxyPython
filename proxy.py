@@ -58,7 +58,7 @@ def main():
 #************** END MAIN PROGRAM ***************
 
 def printout(type,request,address):
-    if "Block" in type:
+    if "Block" in type or "Blacklist" in type:
         colornum = 91
     elif "Request" in type:
         colornum = 92
@@ -84,7 +84,8 @@ def proxy_thread(conn, client_addr):
 
     for i in range(0,len(BLOCKED)):
         if BLOCKED[i] in url:
-            printout("Blacklist-Block",first_line,client_addr)
+            printout("Blacklisted",first_line,client_addr)
+            conn.close()
             sys.exit(1)
 
 
