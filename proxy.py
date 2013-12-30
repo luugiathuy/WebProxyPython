@@ -12,7 +12,7 @@ import os,sys,thread,socket
 BACKLOG = 50            # how many pending connections queue will hold
 MAX_DATA_RECV = 999999  # max number of bytes we receive at once
 DEBUG = True            # set to True to see the debug msgs
-BLOCKED = []      # just an example. Remove with [""] for no blocking at all.
+BLOCKED = []            # just an example. Remove with [""] for no blocking at all.
 
 #**************************************
 #********* MAIN PROGRAM ***************
@@ -21,14 +21,15 @@ def main():
 
     # check the length of command running
     if (len(sys.argv)<2):
-        print "usage: proxy <port>"  
-        return sys.stdout    
+        print "No port given, using :8080 (http-alt)" 
+        port = 8080
+    else:
+        port = int(sys.argv[1]) # port from argument
 
     # host and port info.
     host = ''               # blank for localhost
-    port = int(sys.argv[1]) # port from argument
     
-    print "Proxy Server Running on ",host,":",sys.argv[1]
+    print "Proxy Server Running on ",host,":",port
 
     try:
         # create a socket
@@ -56,6 +57,15 @@ def main():
     s.close()
 #************** END MAIN PROGRAM ***************
 
+def printout(type,request,address):
+    if "Block" in type or "Blacklist" in type:
+        colornum = 91
+    elif "Request" in type:
+        colornum = 92
+    elif "Reset" in type:
+        colornum = 93
+
+    print "\033[",colornum,"m",address[0],"\t",type,"\t",request,"\033[0m"
 
 #*******************************************
 #********* PROXY_THREAD FUNC ***************
@@ -74,10 +84,12 @@ def proxy_thread(conn, client_addr):
 
     for i in range(0,len(BLOCKED)):
         if BLOCKED[i] in url:
-            print "\033[91mBlocked:   ",first_line,"\033[0m"
+            printout("Blacklisted",first_line,client_addr)
+            conn.close()
             sys.exit(1)
 
-    print "\033[92mRequest:   ",first_line,"\033[0m"
+
+    printout("Request",first_line,client_addr)
     # print "URL:",url
     # print
     
@@ -126,7 +138,7 @@ def proxy_thread(conn, client_addr):
             s.close()
         if conn:
             conn.close()
-        print "\033[93mPeer Reset:",first_line,"\033[0m"
+        printout("Peer Reset",first_line,client_addr)
         sys.exit(1)
 #********** END PROXY_THREAD ***********
     
